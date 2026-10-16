@@ -10,6 +10,16 @@ struct DayStats: Codable, Equatable {
     var hours = [Int](repeating: 0, count: 24)
 
     var total: Int { left + right + other }
+
+    /// Tellers lopen alleen op, dus per veld het hoogste getal is de meest complete stand.
+    func merged(with rhs: DayStats) -> DayStats {
+        var result = self
+        result.left = max(left, rhs.left)
+        result.right = max(right, rhs.right)
+        result.other = max(other, rhs.other)
+        result.hours = zip(hours, rhs.hours).map { max($0, $1) }
+        return result
+    }
 }
 
 enum ClickButton {
@@ -125,6 +135,11 @@ final class ClickStore: ObservableObject {
         stats.hours[Calendar.current.component(.hour, from: date)] += 1
         days[key] = stats
         isDirty = true
+
+        let confettiEnabled = UserDefaults.standard.object(forKey: ConfettiOverlay.enabledKey) as? Bool ?? true
+        if confettiEnabled && stats.total % 100 == 0 {
+            ConfettiOverlay.shared.burst()
+        }
     }
 
     // MARK: - Opslag
@@ -145,6 +160,12 @@ final class ClickStore: ObservableObject {
         guard isDirty else { return }
         do {
             try FileManager.default.createDirectory(at: dataURL, withIntermediateDirectories: true)
+            // Voeg samen met wat er al op schijf staat, zodat we nooit eerder opgeslagen dagen
+            // overschrijven (bijv. als een tweede kopie van de app met een lege teller begon).
+            if let data = try? Data(contentsOf: fileURL),
+               let onDisk = try? JSONDecoder().decode([String: DayStats].self, from: data) {
+                days.merge(onDisk) { mine, theirs in mine.merged(with: theirs) }
+            }
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             try encoder.encode(days).write(to: fileURL, options: .atomic)

@@ -4,6 +4,7 @@ Een klein menubalk-appje voor macOS dat al je muisklikken telt, per dag.
 
 - In de menubalk staat het aantal klikken van vandaag; om middernacht begint de teller opnieuw.
 - Klik op het icoon voor de details: links/rechts/overige knoppen, de laatste 24 uur, een grafiek per uur, de afgelopen 7 dagen en je recorddag.
+- Na elke 100 klikken spuit er confetti uit je muiscursor (uit te zetten in het menu; met **Probeer** zie je het meteen).
 - Alleen aantallen per uur worden opgeslagen, geen posities of losse tijdstippen, in `~/Library/Application Support/Muisklikkert/clicks.json`.
 - Er is geen toestemming voor Toegankelijkheid of Invoermonitoring nodig.
 

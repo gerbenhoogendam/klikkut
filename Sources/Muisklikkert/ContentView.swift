@@ -5,6 +5,7 @@ import ServiceManagement
 struct ContentView: View {
     @EnvironmentObject private var store: ClickStore
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
+    @AppStorage(ConfettiOverlay.enabledKey) private var confettiEnabled = true
 
     var body: some View {
         let today = store.today
@@ -90,6 +91,16 @@ struct ContentView: View {
             Toggle("Start bij inloggen", isOn: $launchAtLogin)
                 .toggleStyle(.checkbox)
                 .onChange(of: launchAtLogin) { _, enabled in setLaunchAtLogin(enabled) }
+
+            HStack {
+                Toggle("Confetti bij elke 100 klikken", isOn: $confettiEnabled)
+                    .toggleStyle(.checkbox)
+                Spacer()
+                Button("Probeer") {
+                    ConfettiOverlay.shared.burst()
+                }
+                .controlSize(.small)
+            }
 
             HStack {
                 Button("Open gegevensmap") {

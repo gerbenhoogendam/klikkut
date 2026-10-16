@@ -21,6 +21,13 @@ struct MuisklikkertApp: App {
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Twee kopieën tegelijk zouden elkaars tellingen overschrijven; houd het bij één.
+        let me = NSRunningApplication.current
+        if let bundleID = Bundle.main.bundleIdentifier,
+           NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).contains(where: { $0 != me }) {
+            NSApp.terminate(nil)
+            return
+        }
         MainActor.assumeIsolated { ClickStore.shared.start() }
         enableLaunchAtLoginOnFirstRun()
     }
